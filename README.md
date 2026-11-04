@@ -101,6 +101,28 @@ The only permissions that exist for Ordered Datastores are:
 * `universe.ordered-data-store.scope.entry:write`
 
 ## Building
+## Windows portable build
+
+Download the `OpenCloudTools-Windows-x64` artifact from the latest successful [Windows portable workflow](https://github.com/watameln/OpenCloudTools/actions/workflows/windows-portable.yml). Extract its inner ZIP, then run `OpenCloudTools/OpenCloudTools.exe`. Keep the provided `platforms` directory and DLLs alongside the executable. No separate Qt installation is required.
+
+The workflow builds Qt 6.8.3 with MinGW 13.1 and verifies that the portable executable loads the Qt platform plugin. API functionality still requires your own valid Roblox API key.
+
+To build locally, install Qt 6.8.3 for MinGW 13.1, the matching MinGW compiler, CMake and Ninja, and put Qt and MinGW `bin` directories on your PATH:
+
+```powershell
+cmake -S . -B build/windows -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_PREFIX_PATH=C:/Qt/6.8.3/mingw_64"
+cmake --build build/windows --parallel
+windeployqt --release --compiler-runtime build/windows/OpenCloudTools.exe
+```
+
+Change the Qt installation path to your environment. The old `CMakeUserPresets.json` was tracked with a hard-coded `D:/Dev` path; it has been removed and is now local-only.
+
+**Security:** API keys saved to disk are stored by Qt settings without encryption. Do not save sensitive keys on shared machines.
+
+### API compatibility
+
+Current APIs are documented in [Roblox's Data and memory stores reference](https://create.roblox.com/docs/cloud/reference/features/storage). Bulk backup and legacy version handling have different requirements from basic v2 entry requests; their remaining v1 dependencies should be migrated separately and tested with a non-production universe.
+
 
 This project uses CMake and requires a compiler that supports C++17.
 

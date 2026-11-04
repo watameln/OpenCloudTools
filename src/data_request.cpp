@@ -114,7 +114,7 @@ void DataRequest::handle_reply_ready()
 	pending_reply->deleteLater();
 	pending_reply = nullptr;
 
-	if (http_status == "200") // OK -- NOLINTNEXTLINE(bugprone-branch-clone)
+	if (http_status == "200" || http_status == "201") // OK / Created
 	{
 		handle_http_200(reply_body, headers);
 	}
@@ -970,7 +970,7 @@ void UserRestrictionGetListV2Request::handle_http_200(const QString& body, const
 	const std::optional<GetUserRestrictionListV2Response> response = GetUserRestrictionListV2Response::from(body);
 	if (!response)
 	{
-		status_error("Received invalid response with HTTP 200");
+		do_error("Received invalid response with HTTP 200");
 		return;
 	}
 
@@ -998,8 +998,6 @@ void UserRestrictionGetListV2Request::handle_http_200(const QString& body, const
 	{
 		do_success();
 	}
-
-	do_success();
 }
 
 UserRestrictionPatchUpdateV2Request::UserRestrictionPatchUpdateV2Request(const QString& api_key, const QString& path, const BanListGameJoinRestrictionUpdate& restriction_update) :

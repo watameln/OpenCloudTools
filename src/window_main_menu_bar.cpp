@@ -96,7 +96,7 @@ MyMainWindowMenuBar::MyMainWindowMenuBar(QMainWindow* parent) : QMenuBar{ parent
 	{
 		QAction* const action_github = new QAction{ "Visit repository on &Github", about_menu };
 		connect(action_github, &QAction::triggered, []() {
-			QDesktopServices::openUrl(QUrl{ "https://github.com/jlwitthuhn/OpenCloudTools" });
+			QDesktopServices::openUrl(QUrl{ "https://github.com/watameln/OpenCloudTools" });
 		});
 
 #ifdef GIT_DESCRIBE

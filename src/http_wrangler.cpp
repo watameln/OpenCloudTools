@@ -39,12 +39,12 @@ std::optional<HttpLogEntry> HttpLogModel::get_entry(const std::size_t row_index)
 void HttpLogModel::append_entry(const HttpLogEntry& entry)
 {
 	const QModelIndex parent_index;
-	beginInsertRows(parent_index, 0, 1);
+	beginInsertRows(parent_index, 0, 0);
 	entries.push_back(entry);
 	endInsertRows();
 	while (entries.size() > LOG_MAX_ENTRIES)
 	{
-		beginRemoveRows(parent_index, static_cast<int>(entries.size() - 2), static_cast<int>(entries.size() - 1));
+		beginRemoveRows(parent_index, static_cast<int>(entries.size() - 1), static_cast<int>(entries.size() - 1));
 		entries.erase(entries.begin(), entries.begin() + 1);
 		endRemoveRows();
 	}
@@ -146,7 +146,6 @@ const std::unique_ptr<HttpWrangler>& HttpWrangler::get()
 
 QNetworkReply* HttpWrangler::send(HttpRequestType type, QNetworkRequest& request, const std::optional<QString>& body)
 {
-	request.setAttribute(QNetworkRequest::Attribute::Http2AllowedAttribute, false);
 	add_log_entry(HttpLogEntry{ type, request.url().toString() });
 	switch (type)
 	{

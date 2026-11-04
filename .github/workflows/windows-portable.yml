@@ -1,0 +1,58 @@
+name: Windows portable
+on:
+  push:
+    branches: [master, modernize-windows-2026]
+    tags: ["v*"]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  portable:
+    name: Build Windows x64 ZIP
+    runs-on: windows-2022
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Qt 6.8.3 and MinGW 13.1
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.8.3"
+          arch: win64_mingw
+          tools: tools_mingw1310
+          cache: true
+      - name: Configure and compile
+        shell: pwsh
+        run: |
+          $qtRoot = $env:QT_ROOT_DIR
+          $qtInstall = Split-Path (Split-Path $qtRoot -Parent) -Parent
+          $mingwBin = Join-Path $qtInstall "Tools/mingw1310_64/bin"
+          if (!(Test-Path (Join-Path $mingwBin "g++.exe"))) { throw "MinGW 13.1 not found at $mingwBin" }
+          $env:PATH = "$mingwBin;$(Join-Path $qtRoot 'bin');$env:PATH"
+          "MINGW_BIN=$mingwBin" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          cmake -S . -B build/windows -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_PREFIX_PATH=$qtRoot" "-DCMAKE_C_COMPILER=$(Join-Path $mingwBin 'gcc.exe')" "-DCMAKE_CXX_COMPILER=$(Join-Path $mingwBin 'g++.exe')"
+          if ($LASTEXITCODE -ne 0) { throw "CMake configure failed" }
+          cmake --build build/windows --parallel 2
+          if ($LASTEXITCODE -ne 0) { throw "CMake build failed" }
+      - name: Assemble and verify portable package
+        shell: pwsh
+        run: |
+          $env:PATH = "$env:MINGW_BIN;$(Join-Path $env:QT_ROOT_DIR 'bin');$env:PATH"
+          $folder = "release/OpenCloudTools"
+          New-Item -ItemType Directory -Force -Path $folder | Out-Null
+          Copy-Item "build/windows/OpenCloudTools.exe" $folder
+          & (Join-Path $env:QT_ROOT_DIR "bin/windeployqt.exe") --release --compiler-runtime --no-translations "$folder/OpenCloudTools.exe"
+          if ($LASTEXITCODE -ne 0) { throw "windeployqt failed" }
+          if (!(Test-Path "$folder/platforms/qwindows.dll")) { throw "Windows platform plugin is missing" }
+          & "$folder/OpenCloudTools.exe" --smoke-test
+          if ($LASTEXITCODE -ne 0) { throw "Portable executable startup smoke-test failed" }
+          Compress-Archive -Path $folder -DestinationPath "release/OpenCloudTools-Windows-x64.zip" -CompressionLevel Optimal -Force
+      - name: Upload Windows portable ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenCloudTools-Windows-x64
+          path: release/OpenCloudTools-Windows-x64.zip
+          if-no-files-found: error
+          retention-days: 30

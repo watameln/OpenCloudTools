@@ -14,11 +14,7 @@
 static std::optional<bool> extract_bool(const QJsonObject& obj, const QString& name)
 {
 	const QJsonObject::const_iterator iter = obj.find(name);
-	if (iter == obj.end())
-	{
-
-	}
-	if (iter->isBool() == false)
+	if (iter == obj.end() || !iter->isBool())
 	{
 		return std::nullopt;
 	}

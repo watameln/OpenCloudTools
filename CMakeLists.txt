@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(OpenCloudTools VERSION 1.0.0 LANGUAGES C CXX)
+project(OpenCloudTools VERSION 1.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -41,6 +41,7 @@ add_library(extern_sqlite3 STATIC ./extern/sqlite/sqlite3.c)
 
 set(OPENCLOUDTOOLS_SRC
 	./src/main.cpp
+	./res/app.qrc
 	./src/assert.cpp
 	./src/assert.h
 	./src/build_info.cpp
@@ -194,7 +195,6 @@ if(NOT OCT_USE_QT5)
 		TARGET OpenCloudTools
 		OUTPUT_SCRIPT deploy_script
 		NO_TRANSLATIONS
-		NO_COMPILER_RUNTIME
 		NO_UNSUPPORTED_PLATFORM_ERROR
 	)
 	install(SCRIPT ${deploy_script})

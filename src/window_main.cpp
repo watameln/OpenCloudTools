@@ -18,6 +18,7 @@
 #include <QModelIndex>
 #include <QPoint>
 #include <QPushButton>
+#include <QStatusBar>
 #include <QSize>
 #include <QString>
 #include <QToolBar>
@@ -56,7 +57,7 @@ MyMainWindow::MyMainWindow() : QMainWindow{ nullptr, Qt::Window }
 {
 	setAttribute(Qt::WA_DeleteOnClose);
 	setWindowTitle("OpenCloudTools");
-	setMinimumSize(650, 500);
+	setMinimumSize(800, 530);
 
 	connect(&(UserProfile::get()), &UserProfile::active_api_key_changed, this, &MyMainWindow::handle_active_api_key_changed);
 
@@ -74,15 +75,20 @@ MyMainWindow::MyMainWindow() : QMainWindow{ nullptr, Qt::Window }
 
 		edit_api_key_name = new QLineEdit{ main_tool_bar };
 		edit_api_key_name->setReadOnly(true);
-		edit_api_key_name->setMaximumWidth(250);
+		edit_api_key_name->setMaximumWidth(280);
+		edit_api_key_name->setPlaceholderText("No key selected");
 
-		QPushButton* const change_key_button = new QPushButton{ "Change Key", main_tool_bar };
+		QPushButton* const change_key_button = new QPushButton{ "Manage Keys...", main_tool_bar };
 		connect(change_key_button, &QPushButton::clicked, this, &MyMainWindow::pressed_change_key);
 
 		main_tool_bar->addWidget(api_key_label);
 		main_tool_bar->addWidget(edit_api_key_name);
 		main_tool_bar->addSeparator();
 		main_tool_bar->addWidget(change_key_button);
+		main_tool_bar->addSeparator();
+		QLabel* const hint = new QLabel{ "Double-click a tool to open", main_tool_bar };
+		hint->setObjectName("toolbarHint");
+		main_tool_bar->addWidget(hint);
 	}
 	addToolBar(main_tool_bar);
 
@@ -101,10 +107,12 @@ MyMainWindow::MyMainWindow() : QMainWindow{ nullptr, Qt::Window }
 			connect(tree_universe, &QTreeWidget::customContextMenuRequested, this, &MyMainWindow::show_universe_context_menu);
 			tree_universe->setColumnCount(1);
 			tree_universe->setHeaderHidden(true);
+			tree_universe->setIndentation(18);
+			tree_universe->setMinimumWidth(220);
 			connect(tree_universe, &QTreeWidget::itemDoubleClicked, this, &MyMainWindow::show_subwindow_from_item);
 			connect(tree_universe, &QTreeWidget::itemSelectionChanged, this, &MyMainWindow::gui_refresh);
 
-			QPushButton* const button_add_universe = new QPushButton{ "Add universe...", universe_tree_container_inner };
+			button_add_universe = new QPushButton{ "Add universe...", universe_tree_container_inner };
 			connect(button_add_universe, &QPushButton::clicked, this, &MyMainWindow::pressed_add_universe);
 
 			button_edit_universe = new QPushButton{ "Edit universe...", universe_tree_container_inner };
@@ -127,7 +135,8 @@ MyMainWindow::MyMainWindow() : QMainWindow{ nullptr, Qt::Window }
 	center_mdi_widget->setOption(QMdiArea::DontMaximizeSubWindowOnActivation, true);
 	setCentralWidget(center_mdi_widget);
 
-	resize(1200, 650);
+	statusBar()->showMessage("Select an API key and universe to get started.");
+	resize(1280, 760);
 
 	gui_refresh();
 
@@ -138,21 +147,16 @@ MyMainWindow::MyMainWindow() : QMainWindow{ nullptr, Qt::Window }
 void MyMainWindow::gui_refresh()
 {
 	const std::shared_ptr<ApiKeyProfile> api_profile = attached_profile.lock();
-	if (api_profile)
-	{
-		setEnabled(true);
-		edit_api_key_name->setText(api_profile->get_name());
-	}
-	else
-	{
-		setEnabled(false);
-		edit_api_key_name->clear();
-	}
+	const bool has_key = static_cast<bool>(api_profile);
+	edit_api_key_name->setText(has_key ? api_profile->get_name() : QString{});
+	tree_universe->setEnabled(has_key);
+	button_add_universe->setEnabled(has_key);
 
-	const std::optional<UniverseProfile::Id> selected_universe = get_selected_universe_id();
-	const bool universe_buttons_active = static_cast<bool>(selected_universe);
+	const bool universe_buttons_active = has_key && static_cast<bool>(get_selected_universe_id());
 	button_edit_universe->setEnabled(universe_buttons_active);
 	button_delete_universe->setEnabled(universe_buttons_active);
+	statusBar()->showMessage(has_key ? "Connected profile: " + api_profile->get_name()
+		: "No API key selected. Choose Manage Keys to start.");
 }
 
 std::optional<UniverseProfile::Id> MyMainWindow::get_selected_universe_id()

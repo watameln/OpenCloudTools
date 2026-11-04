@@ -382,9 +382,36 @@ void UserProfile::set_qt_theme(const QString& theme_name)
 
 		QApplication::setPalette(main_palette);
 		QApplication::setPalette(menu_palette, "QMenu");
+		QApplication::setStyleSheet(R"QSS(
+QMainWindow, QDialog { background: #202124; }
+QToolBar { background: #25272b; border: 0; border-bottom: 1px solid #3a3c40; spacing: 9px; padding: 7px; }
+QDockWidget::title { background: #25272b; padding: 9px 12px; text-align: left; font-weight: 600; }
+QTreeWidget, QListWidget, QTreeView, QTableView { background: #191b1f; alternate-background-color: #202227; border: 1px solid #37393e; outline: 0; }
+QTreeWidget::item, QListWidget::item { padding: 5px 4px; }
+QTreeWidget::item:selected, QListWidget::item:selected, QTreeView::item:selected { background: #434950; color: white; }
+QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QSpinBox { background: #191b1f; border: 1px solid #424449; border-radius: 3px; padding: 5px 7px; selection-background-color: #686f78; }
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus { border: 1px solid #9fa8b4; }
+QPushButton { background: #383b40; border: 1px solid #50545b; border-radius: 3px; padding: 6px 12px; min-height: 20px; }
+QPushButton:hover { background: #454950; }
+QPushButton:pressed { background: #545962; }
+QPushButton:disabled { color: #8d9096; background: #292b2e; border-color: #35383c; }
+QGroupBox { border: 1px solid #3a3c40; border-radius: 4px; margin-top: 11px; padding-top: 8px; }
+QGroupBox::title { subcontrol-origin: margin; left: 9px; padding: 0 4px; }
+QMenuBar { background: #25272b; padding: 3px; }
+QMenuBar::item { padding: 6px 10px; }
+QMenuBar::item:selected, QMenu::item:selected { background: #44484e; }
+QMenu { background: #25272b; border: 1px solid #41444a; }
+QMenu::item { padding: 6px 26px; }
+QTabWidget::pane { border: 1px solid #3a3c40; }
+QTabBar::tab { background: #292b30; padding: 7px 13px; border: 1px solid #3a3c40; }
+QTabBar::tab:selected { background: #3e4147; }
+QStatusBar { background: #25272b; color: #b9bdc4; border-top: 1px solid #3a3c40; }
+QLabel#toolbarHint { color: #9da3ab; }
+)QSS");
 	}
 	else
 	{
+		QApplication::setStyleSheet(QString{});
 		QApplication::setStyle(qt_theme);
 		QApplication::setPalette(QApplication::style()->standardPalette());
 	}
@@ -789,6 +816,7 @@ UserProfile::UserProfile(QObject* parent) : QObject{ parent }
 		qt_theme = QApplication::style()->objectName();
 #endif
 	}
+	qt_theme = "_fusion_dark";
 	load_from_disk();
 	connect(this, &UserProfile::api_key_list_changed, this, &UserProfile::save_to_disk);
 }

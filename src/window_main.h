@@ -67,6 +67,7 @@ private:
 
 	QTreeWidget* tree_universe = nullptr;
 
+	QPushButton* button_add_universe = nullptr;
 	QPushButton* button_edit_universe = nullptr;
 	QPushButton* button_delete_universe = nullptr;
 
