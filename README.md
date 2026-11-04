@@ -121,6 +121,8 @@ Change the Qt installation path to your environment. The old `CMakeUserPresets.j
 
 ### API compatibility
 
+Data store discovery uses the stable Open Cloud v2 `data-stores` list endpoint and reads the v2 `dataStores` / `nextPageToken` response. Empty lists no longer get treated as errors. Other standard data store operations still use v1 for compatibility with the existing bulk/restore implementation. Error handling now understands HTTP 201/202 and observes numeric `Retry-After` for rate limiting.
+
 Current APIs are documented in [Roblox's Data and memory stores reference](https://create.roblox.com/docs/cloud/reference/features/storage). Bulk backup and legacy version handling have different requirements from basic v2 entry requests; their remaining v1 dependencies should be migrated separately and tested with a non-production universe.
 
 

@@ -134,10 +134,10 @@ QNetworkRequest HttpRequestBuilder::resource_v2(const std::optional<QString>& ap
 
 QNetworkRequest HttpRequestBuilder::standard_datastore_get_list(const QString& api_key, const long long universe_id, std::optional<QString> cursor)
 {
-	QString url = base_url_standard_datastore(universe_id) + "/standard-datastores?limit=50";
+	QString url = base_url_standard_datastore_v2(universe_id) + "?maxPageSize=100";
 	if (cursor)
 	{
-		url = url + "&cursor=" + QUrl::toPercentEncoding(*cursor);
+		url = url + "&pageToken=" + QUrl::toPercentEncoding(*cursor);
 	}
 	QNetworkRequest req{ url };
 	req.setRawHeader("x-api-key", api_key.toStdString().c_str());

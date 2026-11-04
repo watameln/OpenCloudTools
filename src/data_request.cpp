@@ -114,7 +114,7 @@ void DataRequest::handle_reply_ready()
 	pending_reply->deleteLater();
 	pending_reply = nullptr;
 
-	if (http_status == "200" || http_status == "201") // OK / Created
+	if (http_status == "200" || http_status == "201" || http_status == "202") // OK / Created / Accepted
 	{
 		handle_http_200(reply_body, headers);
 	}
@@ -128,13 +128,23 @@ void DataRequest::handle_reply_ready()
 	}
 	else if (http_status == "429") // Too many requests
 	{
-		emit status_info(QString{ "Received HTTP 429, briefly pausing..." });
 		emit received_http_429();
-
-		QTimer* timer = new QTimer(this);
-		timer->setSingleShot(true);
-		connect(timer, &QTimer::timeout, this, &DataRequest::resend);
-		timer->start(get_next_429_delay());
+		int delay_ms = get_next_429_delay();
+		for (const QNetworkReply::RawHeaderPair& header : headers)
+		{
+			if (header.first.toLower() == "retry-after")
+			{
+				bool ok = false;
+				const double seconds = header.second.toDouble(&ok);
+				if (ok)
+				{
+					delay_ms = qBound(1000, static_cast<int>(seconds * 1000.0) + 3000, 300000);
+				}
+				break;
+			}
+		}
+		emit status_info(QString{ "Rate limited (HTTP 429). Retrying after %1 seconds..." }.arg(delay_ms / 1000.0));
+		QTimer::singleShot(delay_ms, this, &DataRequest::resend);
 	}
 	else if (http_status == "500") // Internal server error
 	{

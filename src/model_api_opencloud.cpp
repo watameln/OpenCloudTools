@@ -248,54 +248,37 @@ std::optional<GetOrderedDatastoreEntryListV2Response> GetOrderedDatastoreEntryLi
 
 std::optional<GetStandardDatastoreListResponse> GetStandardDatastoreListResponse::from_json(const QString& json)
 {
-	QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8());
-	QJsonObject root = doc.object();
-
-	std::vector<QString> datastores_vec;
-	QJsonObject::iterator datastores_it = root.find("datastores");
-	if (datastores_it != root.end())
-	{
-		QJsonValueRef datastores_value = datastores_it.value();
-		if (datastores_value.isArray())
-		{
-			for (QJsonValueRef this_val : datastores_value.toArray())
-			{
-				if (this_val.isObject())
-				{
-					QJsonObject this_obj = this_val.toObject();
-
-					QJsonObject::iterator datastore_name_it = this_obj.find("name");
-					if (datastore_name_it != this_obj.end())
-					{
-						if (datastore_name_it.value().isString())
-						{
-							datastores_vec.push_back(datastore_name_it.value().toString());
-						}
-					}
-				}
-			}
-		}
-	}
-
-	std::optional<QString> cursor;
-	QJsonObject::iterator cursor_it = root.find("nextPageCursor");
-	if (cursor_it != root.end())
-	{
-		QJsonValueRef cursor_value = cursor_it.value();
-		if (cursor_value.isString())
-		{
-			cursor = cursor_value.toString();
-		}
-	}
-
-	if (datastores_vec.size() > 0)
-	{
-		return GetStandardDatastoreListResponse{ datastores_vec, cursor };
-	}
-	else
+	const QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8());
+	if (!doc.isObject())
 	{
 		return std::nullopt;
 	}
+
+	const QJsonObject root = doc.object();
+	const QJsonValue stores = root.value("dataStores");
+	if (!stores.isArray())
+	{
+		return std::nullopt;
+	}
+
+	std::vector<QString> names;
+	for (const QJsonValue& value : stores.toArray())
+	{
+		if (!value.isObject())
+		{
+			continue;
+		}
+		const QString id = value.toObject().value("id").toString();
+		if (!id.isEmpty())
+		{
+			names.push_back(id);
+		}
+	}
+
+	const QString token = root.value("nextPageToken").toString();
+	return GetStandardDatastoreListResponse{
+		names, token.isEmpty() ? std::nullopt : std::optional<QString>{token}
+	};
 }
 
 std::optional<GetStandardDatastoreEntryListResponse> GetStandardDatastoreEntryListResponse::from_json(const QString& json, const long long universe_id, const QString& datastore_name)
