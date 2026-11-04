@@ -352,7 +352,7 @@ void StandardDatastorePanel::view_entry(const QModelIndex& index)
 	const std::optional<StandardDatastoreEntryFull> opt_details = req->get_details();
 	if (opt_details)
 	{
-		ViewDatastoreEntryWindow* const view_entry_window = new ViewDatastoreEntryWindow{ this, api_key, *opt_details };
+		ViewDatastoreEntryWindow* const view_entry_window = new ViewDatastoreEntryWindow{ this, api_key, *opt_details, ViewEditMode::View, true };
 		view_entry_window->show();
 	}
 	else

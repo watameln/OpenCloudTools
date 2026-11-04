@@ -49,6 +49,8 @@ set(OPENCLOUDTOOLS_SRC
 	./src/build_info.cpp
 	./src/build_info.h
 	./src/data_request.cpp
+	./src/datastore_entry_payload.cpp
+	./src/datastore_entry_payload.h
 	./src/data_request.h
 	./src/diag_confirm_change.cpp
 	./src/diag_confirm_change.h
@@ -217,3 +219,18 @@ else()
 	target_link_libraries(OpenCloudToolsParserTests PRIVATE Qt6::Widgets)
 endif()
 add_test(NAME DataStoreParser COMMAND OpenCloudToolsParserTests)
+
+add_executable(OpenCloudToolsPayloadTests
+	./tests/test_datastore_entry_payload.cpp
+	./src/datastore_entry_payload.cpp
+	./src/util_json.cpp
+	./src/util_validator.cpp
+	./src/assert.cpp
+)
+target_include_directories(OpenCloudToolsPayloadTests PRIVATE ./src)
+if(OCT_USE_QT5)
+	target_link_libraries(OpenCloudToolsPayloadTests PRIVATE Qt5::Widgets)
+else()
+	target_link_libraries(OpenCloudToolsPayloadTests PRIVATE Qt6::Widgets)
+endif()
+add_test(NAME DataStoreEntryPayload COMMAND OpenCloudToolsPayloadTests)

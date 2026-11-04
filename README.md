@@ -159,3 +159,11 @@ The main content area uses full-size, closable tabs rather than overlapping chil
 The application now always uses **Fusion (Dark)**. Old saved theme preferences are ignored.
 
 For a DataStore key prefix search, enter the DataStore name, optionally provide a scope (defaults to `global`), type the start of the key such as `Player_`, then select **Search prefix** or press Enter in the prefix field. The legacy list API may omit `scope` in its results; the parser now falls back to the requested scope instead of discarding such entries. CI includes regression tests for that behavior and pagination.
+
+### DataStore entry viewer and editor
+
+The entry window now has a large, full-height text area with monospace fonts and JSON syntax highlighting. JSON objects and arrays also have a read-only, expandable **Structure** tab for browsing nested values without editing the raw JSON. **JSON** is the editable source of truth.
+
+Use **Find in text** (Ctrl+F), **Format JSON**, **Copy** or **Reset tab**. Entry details such as version and universe ID are available under **Show entry details**, leaving more room for values.
+
+The **Edit entry** action on a current DataStore entry opens the same focused editor. Viewing a historical version remains read-only. Save (Ctrl+S) is available only for changed, valid data. The editor validates the value, user-ID array and attributes object, preserves string encoding, retains the production-key confirmation, and prompts before discarding unsaved edits.

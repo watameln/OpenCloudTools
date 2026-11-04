@@ -1,7 +1,7 @@
 name: Windows portable
 on:
   push:
-    branches: [master, modernize-windows-2026, ui-tabbed-workspace-2026]
+    branches: [master, modernize-windows-2026, ui-tabbed-workspace-2026, datastore-entry-editor-redesign-2026]
     tags: ["v*"]
   pull_request:
     branches: [master]
@@ -50,6 +50,8 @@ jobs:
           if (!(Test-Path "$folder/platforms/qwindows.dll")) { throw "Windows platform plugin is missing" }
           & "$folder/OpenCloudTools.exe" --smoke-test
           if ($LASTEXITCODE -ne 0) { throw "Portable executable startup smoke-test failed" }
+          & "$folder/OpenCloudTools.exe" --ui-smoke-test
+          if ($LASTEXITCODE -ne 0) { throw "DataStore entry viewer/editor UI smoke-test failed" }
           Compress-Archive -Path $folder -DestinationPath "release/OpenCloudTools-Windows-x64.zip" -CompressionLevel Optimal -Force
       - name: Upload Windows portable ZIP
         uses: actions/upload-artifact@v7.0.2
