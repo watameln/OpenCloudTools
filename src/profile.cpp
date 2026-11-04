@@ -382,7 +382,7 @@ void UserProfile::set_qt_theme(const QString& theme_name)
 
 		QApplication::setPalette(main_palette);
 		QApplication::setPalette(menu_palette, "QMenu");
-		QApplication::setStyleSheet(R"QSS(
+		qApp->setStyleSheet(R"QSS(
 QMainWindow, QDialog { background: #202124; }
 QToolBar { background: #25272b; border: 0; border-bottom: 1px solid #3a3c40; spacing: 9px; padding: 7px; }
 QDockWidget::title { background: #25272b; padding: 9px 12px; text-align: left; font-weight: 600; }
@@ -411,7 +411,7 @@ QLabel#toolbarHint { color: #9da3ab; }
 	}
 	else
 	{
-		QApplication::setStyleSheet(QString{});
+		qApp->setStyleSheet(QString{});
 		QApplication::setStyle(qt_theme);
 		QApplication::setPalette(QApplication::style()->standardPalette());
 	}
