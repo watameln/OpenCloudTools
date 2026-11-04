@@ -9,6 +9,8 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+enable_testing()
+
 option(OCT_USE_CLANG_TIDY "Analyze source files with clang-tidy" FALSE)
 option(OCT_USE_GIT_TAG "Pull the current git tag during build" FALSE)
 option(OCT_USE_IWYU "Analyze includes with include-what-you-use" FALSE)
@@ -199,3 +201,19 @@ if(NOT OCT_USE_QT5)
 	)
 	install(SCRIPT ${deploy_script})
 endif()
+
+add_executable(OpenCloudToolsParserTests
+	./tests/test_datastore_parser.cpp
+	./src/model_api_opencloud.cpp
+	./src/model_common.cpp
+	./src/util_json.cpp
+	./src/util_validator.cpp
+	./src/assert.cpp
+)
+target_include_directories(OpenCloudToolsParserTests PRIVATE ./src)
+if(OCT_USE_QT5)
+	target_link_libraries(OpenCloudToolsParserTests PRIVATE Qt5::Widgets)
+else()
+	target_link_libraries(OpenCloudToolsParserTests PRIVATE Qt6::Widgets)
+endif()
+add_test(NAME DataStoreParser COMMAND OpenCloudToolsParserTests)

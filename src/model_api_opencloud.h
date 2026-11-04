@@ -72,7 +72,7 @@ private:
 class GetStandardDatastoreEntryListResponse
 {
 public:
-	static std::optional<GetStandardDatastoreEntryListResponse> from_json(const QString& json, long long universe_id, const QString& datastore_name);
+	static std::optional<GetStandardDatastoreEntryListResponse> from_json(const QString& json, long long universe_id, const QString& datastore_name, const QString& requested_scope = "global");
 
 	const std::vector<StandardDatastoreEntryName>& get_entries() const { return entries; }
 	const std::optional<QString>& get_cursor() const { return cursor; }

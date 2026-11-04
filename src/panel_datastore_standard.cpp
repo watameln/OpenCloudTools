@@ -103,6 +103,8 @@ StandardDatastorePanel::StandardDatastorePanel(QWidget* parent, const QString& a
 					QLabel* const label_search_datastore_key_name = new QLabel{ "Key prefix:", panel_search_params };
 
 					edit_search_datastore_key_prefix = new QLineEdit{ panel_search_params };
+					edit_search_datastore_key_prefix->setPlaceholderText("e.g. Player_");
+					connect(edit_search_datastore_key_prefix, &QLineEdit::returnPressed, this, &StandardDatastorePanel::pressed_find_prefix);
 					connect(edit_search_datastore_key_prefix, &QLineEdit::textChanged, this, &StandardDatastorePanel::handle_search_text_changed);
 
 					QHBoxLayout* const layout = new QHBoxLayout{ panel_search_params };
@@ -120,7 +122,7 @@ StandardDatastorePanel::StandardDatastorePanel(QWidget* parent, const QString& a
 					button_search_find_all = new QPushButton{ "Find all", panel_search_submit };
 					connect(button_search_find_all, &QPushButton::clicked, this, &StandardDatastorePanel::pressed_find_all);
 
-					button_search_find_prefix = new QPushButton{ "Find prefix match", panel_search_submit };
+					button_search_find_prefix = new QPushButton{ "Search prefix", panel_search_submit };
 					connect(button_search_find_prefix, &QPushButton::clicked, this, &StandardDatastorePanel::pressed_find_prefix);
 
 					QLabel* const label_find_limit = new QLabel{ "Limit:", panel_search_submit };
@@ -721,6 +723,7 @@ void StandardDatastorePanel::pressed_find_all()
 	}
 	OperationInProgressDialog diag{ this, req };
 	diag.exec();
+	if (!req->req_success()) return;
 
 	StandardDatastoreEntryQTableModel* const datastore_model = new StandardDatastoreEntryQTableModel{ tree_view_main, req->get_datastore_entries() };
 	set_table_model(datastore_model);
@@ -760,6 +763,7 @@ void StandardDatastorePanel::pressed_find_prefix()
 	}
 	OperationInProgressDialog diag{ this, req };
 	diag.exec();
+	if (!req->req_success()) return;
 
 	StandardDatastoreEntryQTableModel* datastore_model = new StandardDatastoreEntryQTableModel{ tree_view_main, req->get_datastore_entries() };
 	set_table_model(datastore_model);

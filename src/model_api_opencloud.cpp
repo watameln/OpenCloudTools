@@ -281,72 +281,36 @@ std::optional<GetStandardDatastoreListResponse> GetStandardDatastoreListResponse
 	};
 }
 
-std::optional<GetStandardDatastoreEntryListResponse> GetStandardDatastoreEntryListResponse::from_json(const QString& json, const long long universe_id, const QString& datastore_name)
+std::optional<GetStandardDatastoreEntryListResponse> GetStandardDatastoreEntryListResponse::from_json(const QString& json, const long long universe_id, const QString& datastore_name, const QString& requested_scope)
 {
-	QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8());
-	QJsonObject root = doc.object();
-
-	std::vector<StandardDatastoreEntryName> entries_vec;
-	QJsonObject::iterator keys_it = root.find("keys");
-	if (keys_it != root.end())
+	const QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8());
+	if (!doc.isObject()) return std::nullopt;
+	const QJsonObject root = doc.object();
+	const QJsonValue keys_value = root.value("keys");
+	if (!keys_value.isArray()) return std::nullopt;
+	const QString fallback_scope = requested_scope.isEmpty() ? "global" : requested_scope;
+	std::vector<StandardDatastoreEntryName> entries;
+	for (const QJsonValue& value : keys_value.toArray())
 	{
-		QJsonValueRef keys_value = keys_it.value();
-		if (keys_value.isArray())
+		QString key;
+		QString scope = fallback_scope;
+		if (value.isObject())
 		{
-			for (QJsonValueRef this_val : keys_value.toArray())
-			{
-				if (this_val.isObject())
-				{
-					QJsonObject this_entry_obj = this_val.toObject();
-
-					std::optional<QString> scope_opt;
-					QJsonObject::iterator scope_it = this_entry_obj.find("scope");
-					if (scope_it != this_entry_obj.end())
-					{
-						if (scope_it.value().isString())
-						{
-							scope_opt = scope_it.value().toString();
-						}
-					}
-
-					std::optional<QString> key_opt;
-					QJsonObject::iterator key_it = this_entry_obj.find("key");
-					if (key_it != this_entry_obj.end())
-					{
-						if (key_it.value().isString())
-						{
-							key_opt = key_it.value().toString();
-						}
-					}
-
-					if (scope_opt && key_opt)
-					{
-						entries_vec.push_back(StandardDatastoreEntryName{ universe_id, datastore_name, *key_opt, *scope_opt });
-					}
-				}
-			}
+			const QJsonObject obj = value.toObject();
+			key = obj.value("key").toString();
+			scope = obj.value("scope").toString(fallback_scope);
+		}
+		else if (value.isString())
+		{
+			key = value.toString();
+		}
+		if (!key.isEmpty())
+		{
+			entries.emplace_back(universe_id, datastore_name, key, scope);
 		}
 	}
-
-	std::optional<QString> cursor;
-	QJsonObject::iterator cursor_it = root.find("nextPageCursor");
-	if (cursor_it != root.end())
-	{
-		QJsonValueRef cursor_value = cursor_it.value();
-		if (cursor_value.isString())
-		{
-			cursor = cursor_value.toString();
-		}
-	}
-
-	if (entries_vec.size() > 0)
-	{
-		return GetStandardDatastoreEntryListResponse{ entries_vec, cursor };
-	}
-	else
-	{
-		return std::nullopt;
-	}
+	const QString token = root.value("nextPageCursor").toString();
+	return GetStandardDatastoreEntryListResponse{ entries, token.isEmpty() ? std::nullopt : std::optional<QString>{ token } };
 }
 
 std::optional<GetStandardDatastoreEntryDetailsResponse> GetStandardDatastoreEntryDetailsResponse::from(long long universe_id, const QString& datastore_name, const QString& scope, const QString& key_name, const QString& version, const std::optional<QString>& userids, const std::optional<QString>& attributes, const QString& body)

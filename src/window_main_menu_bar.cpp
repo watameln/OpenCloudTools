@@ -9,7 +9,6 @@
 #include <QMainWindow>
 #include <QMenu>
 #include <QString>
-#include <QStyleFactory>
 #include <QUrl>
 #include <QWidget>
 
@@ -22,7 +21,6 @@
 
 MyMainWindowMenuBar::MyMainWindowMenuBar(QMainWindow* parent) : QMenuBar{ parent }
 {
-	connect(&(UserProfile::get()), &UserProfile::qt_theme_changed, this, &MyMainWindowMenuBar::handle_qt_theme_changed);
 	connect(&(UserProfile::get()), &UserProfile::autoclose_changed, this, &MyMainWindowMenuBar::handle_autoclose_changed);
 
 	QMenu* const file_menu = new QMenu{ "&File", this };
@@ -40,28 +38,6 @@ MyMainWindowMenuBar::MyMainWindowMenuBar(QMainWindow* parent) : QMenuBar{ parent
 
 	QMenu* const preferences_menu = new QMenu{ "&Preferences", this };
 	{
-		QMenu* const theme_menu = new QMenu{ "Theme", preferences_menu };
-		{
-			for (const QString& this_theme : QStyleFactory::keys())
-			{
-				QAction* const this_action = new QAction{ this_theme, theme_menu };
-				connect(this_action, &QAction::triggered, [this_theme]() {
-					UserProfile::get().set_qt_theme(this_theme);
-				});
-				theme_actions.push_back(this_action);
-				theme_menu->addAction(this_action);
-				if (this_theme.toLower() == "fusion")
-				{
-					QAction* fusion_dark_action = new QAction{ "Fusion (Dark)", theme_menu };
-					connect(fusion_dark_action, &QAction::triggered, []() {
-						UserProfile::get().set_qt_theme("_fusion_dark");
-					});
-					theme_actions.push_back(fusion_dark_action);
-					theme_menu->addAction(fusion_dark_action);
-				}
-			}
-		}
-
 		action_toggle_autoclose = new QAction{ "&Close progress windows when complete", preferences_menu };
 		action_toggle_autoclose->setCheckable(true);
 		action_toggle_autoclose->setChecked(UserProfile::get().get_autoclose_progress_window());
@@ -77,8 +53,6 @@ MyMainWindowMenuBar::MyMainWindowMenuBar(QMainWindow* parent) : QMenuBar{ parent
 		action_toggle_datastore_name_filter->setChecked(UserProfile::get().get_show_datastore_name_filter());
 		connect(action_toggle_datastore_name_filter, &QAction::triggered, this, &MyMainWindowMenuBar::pressed_toggle_datastore_name_filter);
 
-		preferences_menu->addMenu(theme_menu);
-		preferences_menu->addSeparator();
 		preferences_menu->addAction(action_toggle_autoclose);
 		preferences_menu->addAction(action_toggle_less_verbose_bulk);
 		preferences_menu->addAction(action_toggle_datastore_name_filter);
@@ -146,7 +120,6 @@ MyMainWindowMenuBar::MyMainWindowMenuBar(QMainWindow* parent) : QMenuBar{ parent
 	addMenu(tools_menu);
 	addMenu(about_menu);
 
-	handle_qt_theme_changed();
 }
 
 void MyMainWindowMenuBar::handle_autoclose_changed()
@@ -156,24 +129,6 @@ void MyMainWindowMenuBar::handle_autoclose_changed()
 	if (autoclose != action_toggle_autoclose->isChecked())
 	{
 		action_toggle_autoclose->setChecked(autoclose);
-	}
-}
-
-void MyMainWindowMenuBar::handle_qt_theme_changed()
-{
-	const QString& selected_theme = UserProfile::get().get_qt_theme();
-	for (QAction* const this_action : theme_actions)
-	{
-		if (this_action->text() == selected_theme || (this_action->text() == "Fusion (Dark)" && selected_theme == "_fusion_dark"))
-		{
-			this_action->setCheckable(true);
-			this_action->setChecked(true);
-		}
-		else
-		{
-			this_action->setCheckable(false);
-			this_action->setChecked(false);
-		}
 	}
 }
 

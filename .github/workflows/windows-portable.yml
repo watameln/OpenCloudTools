@@ -1,7 +1,7 @@
 name: Windows portable
 on:
   push:
-    branches: [master, modernize-windows-2026]
+    branches: [master, modernize-windows-2026, ui-tabbed-workspace-2026]
     tags: ["v*"]
   pull_request:
     branches: [master]
@@ -36,6 +36,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "CMake configure failed" }
           cmake --build build/windows --parallel 2
           if ($LASTEXITCODE -ne 0) { throw "CMake build failed" }
+          ctest --test-dir build/windows --output-on-failure
+          if ($LASTEXITCODE -ne 0) { throw "Parser regression tests failed" }
       - name: Assemble and verify portable package
         shell: pwsh
         run: |

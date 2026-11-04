@@ -151,9 +151,6 @@ public:
 	static UserProfile& get();
 	static std::shared_ptr<ApiKeyProfile> get_active_api_key();
 
-	const QString& get_qt_theme() const { return qt_theme; }
-	void set_qt_theme(const QString& theme_name);
-
 	bool get_autoclose_progress_window() const { return autoclose_progress_window; }
 	void set_autoclose_progress_window(bool autoclose);
 
@@ -172,7 +169,6 @@ public:
 	void activate_api_key(std::optional<ApiKeyProfile::Id> id);
 
 signals:
-	void qt_theme_changed();
 	void autoclose_changed();
 	void active_api_key_changed();
 	void api_key_list_changed();
@@ -187,8 +183,8 @@ private:
 
 	void load_from_disk();
 	void save_to_disk();
+	void apply_dark_theme();
 
-	QString qt_theme;
 	bool autoclose_progress_window = true;
 	bool less_verbose_bulk_operations = true;
 	bool show_datastore_name_filter = false;

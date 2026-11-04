@@ -8,6 +8,8 @@
 #include <QAction>
 #include <QByteArray>
 #include <QDockWidget>
+#include <QBrush>
+#include <QColor>
 #include <QLabel>
 #include <QLineEdit>
 #include <QList>
@@ -20,6 +22,7 @@
 #include <QPushButton>
 #include <QStatusBar>
 #include <QSize>
+#include <QTabWidget>
 #include <QString>
 #include <QToolBar>
 #include <QTreeWidget>
@@ -50,7 +53,9 @@
 template <typename T> static QPointer<QMdiSubWindow> create_and_attach_panel(const std::shared_ptr<const ApiKeyProfile>& api_profile, const std::shared_ptr<UniverseProfile>& universe, QMdiArea* const mdi_area)
 {
 	T* const new_panel = new T{ mdi_area, api_profile->get_key(), universe };
-	return mdi_area->addSubWindow(new_panel);
+	QPointer<QMdiSubWindow> const subwindow = mdi_area->addSubWindow(new_panel);
+	subwindow->setAttribute(Qt::WA_DeleteOnClose);
+	return subwindow;
 }
 
 MyMainWindow::MyMainWindow() : QMainWindow{ nullptr, Qt::Window }
@@ -86,7 +91,7 @@ MyMainWindow::MyMainWindow() : QMainWindow{ nullptr, Qt::Window }
 		main_tool_bar->addSeparator();
 		main_tool_bar->addWidget(change_key_button);
 		main_tool_bar->addSeparator();
-		QLabel* const hint = new QLabel{ "Double-click a tool to open", main_tool_bar };
+		QLabel* const hint = new QLabel{ "Double-click a tool to open it in a tab", main_tool_bar };
 		hint->setObjectName("toolbarHint");
 		main_tool_bar->addWidget(hint);
 	}
@@ -132,7 +137,12 @@ MyMainWindow::MyMainWindow() : QMainWindow{ nullptr, Qt::Window }
 	addDockWidget(Qt::LeftDockWidgetArea, universe_tree_container);
 
 	center_mdi_widget = new QMdiArea{ this };
-	center_mdi_widget->setOption(QMdiArea::DontMaximizeSubWindowOnActivation, true);
+	center_mdi_widget->setViewMode(QMdiArea::TabbedView);
+	center_mdi_widget->setTabsClosable(true);
+	center_mdi_widget->setTabsMovable(true);
+	center_mdi_widget->setDocumentMode(true);
+	center_mdi_widget->setTabPosition(QTabWidget::North);
+	center_mdi_widget->setBackground(QBrush{ QColor{ "#191b1f" } });
 	setCentralWidget(center_mdi_widget);
 
 	statusBar()->showMessage("Select an API key and universe to get started.");
@@ -395,17 +405,16 @@ void MyMainWindow::show_http_log()
 	if (subwindow_http_log)
 	{
 		subwindow_http_log->show();
-		subwindow_http_log->setFocus();
+		center_mdi_widget->setActiveSubWindow(subwindow_http_log);
 		return;
 	}
 
 	HttpLogPanel* const new_panel = new HttpLogPanel{ nullptr };
 	subwindow_http_log = center_mdi_widget->addSubWindow(new_panel);
+	subwindow_http_log->setAttribute(Qt::WA_DeleteOnClose);
 	subwindow_http_log->setWindowTitle("HTTP Log");
-	QSize window_size = subwindow_http_log->size();
-	window_size.setWidth(600);
-	subwindow_http_log->resize(window_size);
 	subwindow_http_log->show();
+	center_mdi_widget->setActiveSubWindow(subwindow_http_log);
 }
 
 void MyMainWindow::show_subwindow(const SubwindowId& id)
@@ -429,7 +438,7 @@ void MyMainWindow::show_subwindow(const SubwindowId& id)
 		if (subwindow)
 		{
 			subwindow->show();
-			subwindow->setFocus();
+			center_mdi_widget->setActiveSubWindow(subwindow);
 			return;
 		}
 	}
@@ -492,6 +501,7 @@ void MyMainWindow::show_subwindow(const SubwindowId& id)
 
 	subwindows[id] = new_subwindow;
 	new_subwindow->show();
+	center_mdi_widget->setActiveSubWindow(new_subwindow);
 }
 
 void MyMainWindow::show_subwindow_from_item(QTreeWidgetItem* const item)

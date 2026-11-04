@@ -3,7 +3,6 @@
 #include <QMenuBar>
 #include <QObject>
 
-#include <vector>
 
 class QAction;
 class QMainWindow;
@@ -21,14 +20,12 @@ signals:
 
 private:
 	void handle_autoclose_changed();
-	void handle_qt_theme_changed();
 
 	void pressed_change_api_key();
 	void pressed_toggle_autoclose();
 	void pressed_toggle_datastore_name_filter();
 	void pressed_toggle_less_verbose_bulk();
 
-	std::vector<QAction*> theme_actions;
 
 	QAction* action_toggle_autoclose = nullptr;
 	QAction* action_toggle_datastore_name_filter = nullptr;

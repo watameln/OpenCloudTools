@@ -151,3 +151,11 @@ This program can probably build and run on any platform that supports Qt 5 or 6,
 ## License
 
 This program is available under the GPLv3 License. See the [LICENSE](./LICENSE) file for the full text of this license.
+
+## Tabbed workspace and DataStore key searching
+
+The main content area uses full-size, closable tabs rather than overlapping child windows. Double-click a tool in the universe sidebar to open it; opening the same tool again focuses its existing tab. Ban List shows a searchable, sortable table with user IDs, dates, reasons, and actions.
+
+The application now always uses **Fusion (Dark)**. Old saved theme preferences are ignored.
+
+For a DataStore key prefix search, enter the DataStore name, optionally provide a scope (defaults to `global`), type the start of the key such as `Player_`, then select **Search prefix** or press Enter in the prefix field. The legacy list API may omit `scope` in its results; the parser now falls back to the requested scope instead of discarding such entries. CI includes regression tests for that behavior and pagination.

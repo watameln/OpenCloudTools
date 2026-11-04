@@ -8,9 +8,12 @@
 #include <QWidget>
 
 class QCheckBox;
+class QLabel;
+class QLineEdit;
+class QSortFilterProxyModel;
 class QModelIndex;
 class QPushButton;
-class QTreeView;
+class QTableView;
 
 class BanListQTableModel;
 class BanListUserRestriction;
@@ -25,6 +28,7 @@ public:
 
 private:
 	void gui_refresh();
+	void update_result_count();
 
 	QModelIndex get_selected_single_index() const;
 	std::optional<BanListUserRestriction> get_selected_restriction() const;
@@ -43,7 +47,10 @@ private:
 
 	QCheckBox* active_only_check = nullptr;
 
-	QTreeView* tree_view = nullptr;
+	QTableView* tree_view = nullptr;
+	QSortFilterProxyModel* filter_model = nullptr;
+	QLineEdit* search_edit = nullptr;
+	QLabel* count_label = nullptr;
 
 	QPushButton* unban_button = nullptr;
 	QPushButton* edit_button = nullptr;

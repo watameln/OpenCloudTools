@@ -187,7 +187,7 @@ QNetworkRequest HttpRequestBuilder::standard_datastore_entry_get_list(const QStr
 	}
 	else
 	{
-		url = url + "&AllScopes=true";
+		url = url + "&allScopes=true";
 	}
 	if (prefix.size() > 0)
 	{

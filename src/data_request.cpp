@@ -723,11 +723,12 @@ QNetworkRequest StandardDatastoreEntryGetListRequest::build_request(std::optiona
 
 void StandardDatastoreEntryGetListRequest::handle_http_200(const QString& body, const QList<QNetworkReply::RawHeaderPair>&)
 {
-	std::optional<GetStandardDatastoreEntryListResponse> response = GetStandardDatastoreEntryListResponse::from_json(body, universe_id, datastore_name);
+	std::optional<GetStandardDatastoreEntryListResponse> response = GetStandardDatastoreEntryListResponse::from_json(body, universe_id, datastore_name, scope);
 	if (response)
 	{
 		for (const StandardDatastoreEntryName& this_entry : response->get_entries())
 		{
+			if (!prefix.isEmpty() && !this_entry.get_key().startsWith(prefix, Qt::CaseSensitive)) continue;
 			if (result_limit && datastore_entries.size() >= *result_limit)
 			{
 				// Limit has been hit
